@@ -7,6 +7,7 @@ const app = express();
 const path = require('path');
 const http = require('http').Server(app);
 const ejs = require('ejs');
+const ejsLint = require('ejs-lint');
 
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
@@ -39,6 +40,7 @@ mongoose.connect('mongodb://localhost:27017/mydatabase', { useNewUrlParser: true
   });
 
   app.post('/signup', (req, res) => {
+    const { login, email, phonenum, pass, pass_2 } = req.body;
     const data = req.body;
   
     let errors = [];
@@ -79,14 +81,23 @@ mongoose.connect('mongodb://localhost:27017/mydatabase', { useNewUrlParser: true
         reg_date: Date.now(),
         status: 1
       };
+      user.save()
+        .then(() => {
+          res.redirect('/success'); // Перенаправлення після успішної реєстрації
+        })
+        .catch(err => {
+          console.error(err);
+          res.redirect('/error'); // Перенаправлення у разі помилки
+        });
   
       db.save('users', user);
   
       req.session.logged_user = user;
   
       res.redirect('/patregodp/');
+      res.render('signup', { data: { login: '', email: '', phonenum: '', pass: '' , pass_2: '' }, errors: [] });
     } else {
-      res.render('signup', { errors });
+      res.render('signup', { data, errors });
     }
   });
 
@@ -100,7 +111,7 @@ app.get('/about', (req, res) => {
 });
 
 app.get('/signup', (req, res) => {
-  res.render(`${views}/signup`);
+  res.render(`${views}/signup`, { data: {} });
 });
 
 app.get('/login', (req, res) => {

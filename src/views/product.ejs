@@ -1,0 +1,106 @@
+<%
+const product = await db.query("SELECT * FROM catalog WHERE id = ? AND status = ? LIMIT 1", [
+	parseInt(req.query.id),
+	"enabled"
+]);
+
+if (req.query.preview) {
+	product = await db.query("SELECT * FROM catalog WHERE id = ? AND status = ? AND uploaded_by = ? LIMIT 1", [
+		parseInt(req.query.id),
+		"moderation",
+		req.session.logged_user.id
+	]);
+}
+
+const exists = product.length > 0;
+
+let my_product = false;
+let data = {};
+let login = '';
+let phonenum = '';
+let email = '';
+
+if (exists) {
+	const productData = product[0];
+	my_product = parseInt(productData.uploaded_by) === parseInt(req.session.logged_user.id);
+	const userData = await db.query("SELECT login, phonenum, email from users WHERE id = ?", [
+		parseInt(productData.uploaded_by)
+	]);
+
+	if (userData.length > 0) {
+		data = userData[0];
+		login = data.login;
+		phonenum = data.phonenum;
+		email = data.email;
+
+		if (phonenum[0] !== '+') {
+			phonenum = '+' + phonenum;
+		}
+	}
+}
+%>
+<!DOCTYPE html>
+<html lang="en">
+<title><%= exists ? product[0].title : "Товар не знайдений" %> | Patrego</title>
+<%- include('../layout/head.ejs') %>
+<%- include('../layout/header.ejs') %>
+
+<% if (!exists) { %>
+	<div class="product">
+		<div class="col-100">Товар не знайдений</div>
+		<div class="col-100 pointer bold" onclick="window.history.back()">« Назад</div>
+	</div>
+<% } else { %>
+	<div class="product">
+		<div class="col-40">
+			<div class="product__image" style="background-image: url(/PatregoDP/uploads/<%= product[0].image %>)"></div>
+			<div class="product__price"><%= product[0].price %></div>
+			<% if (my_product) { %>
+				<a href="buy.php?remove&id=<%= product[0].id %>" class="product__buy confirm error" data-text="Ви впевнені, що хочете видалити цей товар?">Видалити</a>
+			<% } else { %>
+				<a href="buy.php?id=<%= product[0].id %>" class="product__buy confirm" data-text="Ви впевнені, що хочете придбати цей товар?">Придбати</a>
+			<% } %>
+		</div>
+		<div class="col-60 is-flex">
+			<div class="product__left">
+				<div class="product__date">
+					<%= new Date(product[0].moderation_date * 1000).toLocaleString('en-US', { timeZone: 'UTC' }) %>
+				</div>
+				<div class="product__title">
+					<%= product[0].title %>
+				</div>
+				<div class="product__city">
+					<div class="product__city__text">Відправка з:</div>&nbsp;<%= product[0].city %>
+				</div>
+				<div class="product__description">
+					<div class="product__description__text">Опис:</div>&nbsp;<%= product[0].description %>
+				</div>
+			</div>
+			<div class="product__right">
+				<div class="product__seller">
+					@<%= login %>
+				</div>
+				<div class="product__phone">
+					<a href="tel:<%= phonenum %>"><%= phonenum %></a>
+				</div>
+				<div class="product__email">
+					<a href="mailto:<%= email %>"><%= email %></a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+		Array.from(document.querySelectorAll('.confirm')).map(e => {
+			e.addEventListener('click', function(e) {
+				if (!confirm(this.dataset.text || "Ви впевнені?")) {
+					e.preventDefault();
+				}
+			})
+		})
+	</script>
+<% } %>
+
+
+
+<%- include('../layout/footer.ejs') %>
+</html>

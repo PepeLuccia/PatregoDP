@@ -1,0 +1,131 @@
+<% if (typeof load !== 'undefined') { %>
+	<% const status_map = { enabled: 'Активний', moderation: 'На перевірці', disabled: 'Не активний' }; %>
+	<% if (load === 'sells') { %>
+		<% orders.forEach((o) => { %>
+			<tr>
+				<td><%= o.id %></td>
+				<td><a href="./product.ejs?id=<%= o.id %>&preview"><img src="uploads/<%= o.image %>" alt="Image" style="max-height: 100px;display:block;margin: 0 auto;"></a></td>
+				<td><%= o.title %></td>
+				<td><%= o.description %></td>
+				<td><%= o.price %></td>
+				<td class="item-<%= o.status %>"><%= status_map[o.status] %></td>
+				<td><%= o.moderation_date && o.status === 'enabled' ? new Date(o.moderation_date).toLocaleString('en-US', { timeZone: 'UTC' }) : '' %></td>
+				<td><%= o.creation_date ? new Date(o.creation_date).toLocaleString('en-US', { timeZone: 'UTC' }) : '' %></td>
+				<td>
+					<a href="./buy.ejs?remove&id=<%= o.id %>&preview" class="btn btn-danger">Видалити</a>
+				</td>
+			</tr>
+		<% }) %>
+	<% } else if (load === 'purchases') { %>
+		<% orders.forEach((o) => { %>
+			<tr>
+				<td><%= o.id %></td>
+				<td><a href="./product.php?id=<%= o.id %>&preview"><img src="uploads/<%= o.image %>" alt="Image" style="max-height: 100px;display:block;margin: 0 auto;"></a></td>
+				<td><%= o.title %></td>
+				<td><%= o.description %></td>
+				<td><%= o.price %></td>
+				<td class="item-enabled">Куплено</td>
+				<td><%= o.moderation_date && o.status === 'enabled' ? new Date(o.moderation_date).toLocaleString('en-US', { timeZone: 'UTC' }) : '' %></td>
+				<td><%= o.creation_date ? new Date(o.creation_date).toLocaleString('en-US', { timeZone: 'UTC' }) : '' %></td>
+				<td></td>
+			</tr>
+		<% }) %>
+	<% } %>
+	<% return; %>
+<% } %>
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Особистий кабінет | Patrego</title>
+		<%- include('src/includes/head') %>
+	</head>
+	<body>
+		<%- include('src/content/header') %>
+
+		<div class="profile-form container mt-4">
+			<% if (typeof logged_user !== 'undefined') { %>
+				<div class="hello">
+					Вітаємо, <%= logged_user.login %>!
+				</div>
+				<div class="label">
+					E-mail
+				</div>
+				<div class="email">
+					<%= logged_user.email %>
+				</div>
+				<div class="label">
+					Номер телефону
+				</div>
+				<div class="phonenum">
+					<%= logged_user.phonenum %>
+				</div>
+				<div class="label">
+					Дата реєстрації
+				</div>
+				<div class="reg_date">
+					<%= new Date(logged_user.reg_date).toLocaleString('en-US', { timeZone: 'UTC' }) %>
+				</div>
+				<% if (parseInt(logged_user.status) === 2) { %>
+					<br><a class="logout_link" href="./admin">Адмін-панель</a>
+				<% } %>
+				<br><a class="logout_link" href="add.php">Додати товар</a>
+				<br><br><a class="logout_link" href="logout.php">Вихід</a>
+			<% } %>
+		</div>
+
+		<div class="container">
+			<div class="profile-tabs">
+				<div class="profile-tab" data-type="sells">Ваші товари</div>
+				<div class="profile-tab" data-type="purchases">Історія Покупок</div>
+			</div>
+			<div class="profile-catalog">
+				<table>
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>Фото</th>
+							<th>Найменування</th>
+							<th>Опис</th>
+							<th>Ціна</th>
+							<th>Статус</th>
+							<th>Дата Модерації</th>
+							<th>Дата Створення</th>
+							<th>Дія</th>
+						</tr>
+					</thead>
+					<tbody id="data-content"></tbody>
+				</table>
+			</div>
+		</div>
+
+		<script>
+			let active_tab = '';
+			let loading = false;
+			$('.profile-tab').on('click', function(e){
+				const type = $(this).data('type');
+
+				if (type === active_tab || loading) return;
+				loading = true;
+				$('.profile-tab').removeClass('active');
+				$(this).addClass('active');
+
+				const url = `?load=${type}`;
+				$('#data-content').html('<tr><td colspan="9">Завантаження...</td></tr>');
+
+				fetch(url)
+					.then(res => res.text())
+					.then(data => {
+						setTimeout(function(){
+							loading = false;
+							if (!data.trim().length)
+								data = '<tr><td colspan="9">Нічого не знайдено</td></tr>';
+							$('#data-content').html(data);
+						}, 500);
+					});
+			});
+			$('.profile-tab')[0].click();
+		</script>
+	</body>
+<%- include('../layout/footer.ejs') %>
+</html>
