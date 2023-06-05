@@ -1,63 +1,60 @@
-<% if (!logged_user) { %>
-	<% res.redirect('./login'); %>
-<% } else { %>
-	<% let errors = []; %>
+<% if (!logged_user) { 
+	 res.redirect('./login'); 
+ } else { 
+	 let errors = []; 
 
-	<% if (add) { %>
-		<% if (!uploading) { %>
-			<% res.redirect('?'); %>
-			<% return; %>
-		<% } %>
+	 if (add) { 
+		 if (!uploading) { 
+			 res.redirect('?'); 
+			 return; 
+		 } 
 
-		<% if (!title || !title.trim()) { %>
-			<% errors.push("Назва не вказана"); %>
-		<% } else if (!city || !city.trim()) { %>
-			<% errors.push("Місто не вказане"); %>
-		<% } else if (!description || !description.trim()) { %>
-			<% errors.push("Опис не вказаний"); %>
-		<% } else if (!price || price.indexOf('e') !== -1 || parseFloat(price) <= 0) { %>
-			<% errors.push("Невірна ціна"); %>
-		<% } else if (!file) { %>
-			<% errors.push("Додайте зображення товару"); %>
-		<% } else if (file.error) { %>
-			<% errors.push("Помилка при завантаженні зображення [1]"); %>
-		<% } %>
+		 if (!title || !title.trim()) { 
+			errors.push("Назва не вказана"); 
+		 } else if (!city || !city.trim()) { 
+			errors.push("Місто не вказане"); 
+		 } else if (!description || !description.trim()) { 
+			 errors.push("Опис не вказаний"); 
+		 } else if (!price || price.indexOf('e') !== -1 || parseFloat(price) <= 0) { 
+			 errors.push("Невірна ціна"); 
+		 } else if (!file) { 
+			 errors.push("Додайте зображення товару"); 
+		 } else if (file.error) { 
+			 errors.push("Помилка при завантаженні зображення [1]"); 
+		 } 
 
-		<% if (errors.length === 0) { %>
-			<% let file = req.files.file; %>
-			<% let extension = path.extname(file.name); %>
-			<% let filename_hash = md5(file.name + file.size); %>
+		 if (errors.length === 0) { 
+			 let file = req.files.file; 
+			 let extension = path.extname(file.name); 
+			 let filename_hash = md5(file.name + file.size); 
 
-			<% try { %>
-				<% if (!fs.existsSync(`${__dirname}/uploads/${filename_hash}${extension}`)) { %>
-					<% fs.renameSync(file.tempFilePath, `${__dirname}/uploads/${filename_hash}${extension}`); %>
-				<% } %>
+			 try { 
+				 if (!fs.existsSync(`${__dirname}/uploads/${filename_hash}${extension}`)) { 
+					 fs.renameSync(file.tempFilePath, `${__dirname}/uploads/${filename_hash}${extension}`); 
+				 } 
 
-				<% let item = R.dispense('catalog'); %>
+				let item = R.dispense('catalog');
 
-				<% item.title = title; %>
-				<% item.city = city; %>
-				<% item.description = description; %>
-				<% item.price = parseFloat(price); %>
-				<% item.image = `${filename_hash}${extension}`; %>
-				<% item.status = "moderation"; %>
-				<% item.moderation_date = Date.now(); %>
-				<% item.creation_date = Date.now(); %>
-				<% item.uploaded_by = logged_user.id; %>
-				<% item.sold_to = 0; %>
+				item.title = title;
+				item.city = city;
+				item.description = description;
+				item.price = parseFloat(price);
+				item.image = `${filename_hash}${extension}`;
+				item.status = "moderation";
+				item.moderation_date = Date.now();
+				item.creation_date = Date.now();
+				item.uploaded_by = logged_user.id;
+				item.sold_to = 0;
 
-				<% let id = R.store(item); %>
-				<% delete req.session.uploading; %>
-				<% res.redirect(`./product?id=${id}&preview`); %>
-				<% return; %>
-			<% } catch (error) { %>
-				<% errors.push("Помилка при завантаженні зображення [2]"); %>
-			<% } %>
-		<% } %>
-	<% %>
-
-	<% req.session.uploading = 1; %>
-
+				let id = R.store(item);
+				delete req.session.uploading;
+				res.redirect(`./product?id=${id}&preview`);
+				return;
+			} catch (error) {
+				errors.push("Помилка при завантаженні зображення [2]");
+			}
+		}
+		req.session.uploading = 1; 
 	<!DOCTYPE html>
 	<html lang="en">
 	<title>Додати товар | Patrego</title>
