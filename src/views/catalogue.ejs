@@ -5,10 +5,10 @@
 	<%- include('/src/layout/head.ejs') %>
 </head>
 <body>
-	<?php require "src/content/header.ejs"; ?>
+	<%- include('/src/layout/header.ejs') %>
 
-	<?php require "catalogue-main.ejs"; ?>
+	<%- include('catalogue-main.ejs') %>
 	
-	<?php require "src/content/footer.ejs"; ?>
+	<%- include('/src/layout/footer.ejs') %>
 </body>
 </html>
