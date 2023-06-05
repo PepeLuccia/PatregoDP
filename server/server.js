@@ -8,6 +8,7 @@ const path = require('path');
 const http = require('http').Server(app);
 const ejs = require('ejs');
 const ejsLint = require('ejs-lint');
+const { MongoClient } = require('mongodb');
 
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
@@ -31,9 +32,11 @@ app.use(session({
   saveUninitialized: false
 }));
 
-mongoose.connect('mongodb://localhost:27017/mydatabase', { useNewUrlParser: true, useUnifiedTopology: true })
+MongoClient.connect('mongodb://localhost:27017/mydatabase', { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
+    const db = client.db(dbName);
     console.log('Підключено до бази даних');
+    client.close(); // Закриваємо підключення до MongoDB при завершенні
   })
   .catch(err => {
     console.error('Помилка підключення до бази даних', err);

@@ -1,127 +1,118 @@
-<?php 
-require_once(__DIR__."/src/includes/db.php");
+<% if (!logged_user) { %>
+	<% res.redirect('./login'); %>
+<% } else { %>
+	<% let errors = []; %>
 
-if(!isset($_SESSION['logged_user'])){
-	header('Location: ./login.php');
-	exit;
-}
+	<% if (add) { %>
+		<% if (!uploading) { %>
+			<% res.redirect('?'); %>
+			<% return; %>
+		<% } %>
 
-$errors = [];
+		<% if (!title || !title.trim()) { %>
+			<% errors.push("Назва не вказана"); %>
+		<% } else if (!city || !city.trim()) { %>
+			<% errors.push("Місто не вказане"); %>
+		<% } else if (!description || !description.trim()) { %>
+			<% errors.push("Опис не вказаний"); %>
+		<% } else if (!price || price.indexOf('e') !== -1 || parseFloat(price) <= 0) { %>
+			<% errors.push("Невірна ціна"); %>
+		<% } else if (!file) { %>
+			<% errors.push("Додайте зображення товару"); %>
+		<% } else if (file.error) { %>
+			<% errors.push("Помилка при завантаженні зображення [1]"); %>
+		<% } %>
 
-if(isset($_GET['add'])){
-	if(!isset($_SESSION['uploading'])){
-		header('Location: ?');
-		die();
-	}
+		<% if (errors.length === 0) { %>
+			<% let file = req.files.file; %>
+			<% let extension = path.extname(file.name); %>
+			<% let filename_hash = md5(file.name + file.size); %>
 
+			<% try { %>
+				<% if (!fs.existsSync(`${__dirname}/uploads/${filename_hash}${extension}`)) { %>
+					<% fs.renameSync(file.tempFilePath, `${__dirname}/uploads/${filename_hash}${extension}`); %>
+				<% } %>
 
-	if(!isset($_POST['title']) || !trim($_POST['title'])){
-		$errors[] = "Назва не вказана";
-	}elseif(!isset($_POST['city']) || !trim($_POST['city'])){
-		$errors[] = "Місто не вказане";
-	}elseif(!isset($_POST['description']) || !trim($_POST['description'])){
-		$errors[] = "Опис не вказаний";
-	}elseif(!isset($_POST['price']) || strpos('e', $_POST['price']) || (float)($_POST['price']) <= 0){
-		$errors[] = "Невірна ціна";
-	}elseif(!isset($_FILES['file'])){
-		$errors[] = "Додайте зображення товару";
-	}elseif($_FILES['file']['error']){
-		$errors[] = "Помилка при завантаженні зображення [1]";
-	}
+				<% let item = R.dispense('catalog'); %>
 
-	if(empty($errors)){
-		$file = $_FILES['file'];
-		$extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-		$filename_hash = md5($file['name'].$file['size']);
+				<% item.title = title; %>
+				<% item.city = city; %>
+				<% item.description = description; %>
+				<% item.price = parseFloat(price); %>
+				<% item.image = `${filename_hash}${extension}`; %>
+				<% item.status = "moderation"; %>
+				<% item.moderation_date = Date.now(); %>
+				<% item.creation_date = Date.now(); %>
+				<% item.uploaded_by = logged_user.id; %>
+				<% item.sold_to = 0; %>
 
-		try{
-			if(!file_exists(__DIR__."/uploads/$filename_hash.$extension"))
-				move_uploaded_file($file['tmp_name'], __DIR__."/uploads/$filename_hash.$extension");
+				<% let id = R.store(item); %>
+				<% delete req.session.uploading; %>
+				<% res.redirect(`./product?id=${id}&preview`); %>
+				<% return; %>
+			<% } catch (error) { %>
+				<% errors.push("Помилка при завантаженні зображення [2]"); %>
+			<% } %>
+		<% } %>
+	<% %>
 
-			$item                  = R::dispense('catalog');
+	<% req.session.uploading = 1; %>
 
-			$item->title           = $_POST['title'];
-			$item->city           = $_POST['city'];
-			$item->description     = $_POST['description'];
-			$item->price           = (float)$_POST['price'];
-			$item->image           = "$filename_hash.$extension";
-			$item->status          = "moderation";
-			$item->moderation_date = time();
-			$item->creation_date   = time();
-			$item->uploaded_by     = $_SESSION['logged_user']->id;
-			$item->sold_to         = 0;
+	<!DOCTYPE html>
+	<html lang="en">
+	<title>Додати товар | Patrego</title>
+	<%- include('../includes/head') %>
+	<%- include('../content/header') %>
 
-			$id = R::store($item);
-			unset($_SESSION['uploading']);
-			header("Location: ./product.php?id=$id&preview");
-			die();
-		}catch(Exception $e){
-			$errors[] = "Помилка при завантаженні зображення [2]";
-		}
-	}
-}
+	<form action="?add" method="POST" enctype="multipart/form-data">
+		<div class="container add-product">
+			<div class="error" style="color: indianred"><%- errors.shift() %></div>
 
-$_SESSION['uploading'] = 1;
+			<div>
+				<div class="label">Назва: <br></div>
+				<input type="text" class="form-control" name="title" required placeholder="HP 255 G6" value="<%= title || '' %>">
+			</div>
 
-?>
-<!DOCTYPE html>
-<html lang="en">
-<title>Додати товар | Patrego</title>
-<?php 
+			<div>
+				<div class="label">Місто відправника: <br></div>
+				<input type="text" class="form-control" name="city" required placeholder="Київ" value="<%= city || '' %>">
+			</div>
 
-require "src/includes/head.php"; 
-require "src/content/header.php";
+			<div>
+				<div class="label">Опис: </div>
+				<textarea name="description" class="form-control" required placeholder="Core i3, GTX1060, 8 RAM, 1TB ssd" style="resize: vertical; width:100%"><%= description || '' %></textarea>
+			</div>
 
-?>
+			<div>
+				<div class="label">Ціна: </div>
+				<input type="number" class="form-control" name="price" required placeholder="Ціна" value="<%= price || '' %>">
+			</div>
 
-<form action="?add" method="POST" enctype="multipart/form-data">
-	<div class="container add-product">
-		<div class="error" style="color:indianred"><?=array_shift($errors)?></div>
+			<div>
+				<div class="label">Фото: </div>
+				<input type="file" class="form-control" name="file" required placeholder="Назва" accept=".jpg, .jpeg, .png">
+			</div>
 
-		<div>
-			<div class="label">Назва: <br></div>
-			<input type="text" class="form-control" name="title" required placeholder="HP 255 G6" value="<?=@$_POST['title']?>">
+			<img src="about:blank" alt="" id="preview" style="display:none; max-height: 300px;">
+			<br>
+			<div><button type="submit" class="btn btn-success">Додати</button></div>
+
 		</div>
+	</form>
+	<script>
+		// Preview image
+		let preview = document.getElementById('preview');
+		let file = document.querySelector('[name="file"]');
 
-		<div>
-			<div class="label">Місто відправника: <br></div>
-			<input type="text" class="form-control" name="city" required placeholder="Київ" value="<?=@$_POST['city']?>">
-		</div>
+		file.addEventListener('change', function(e) {
+			if (!file.files.length)
+				return preview.style.display = "none";
 
-		<div>
-			<div class="label">Опис: </div>
-			<textarea  name="description" class="form-control" required placeholder="Core i3, GTX1060, 8 RAM, 1TB ssd" style="resize: vertical; width:100%"><?=@$_POST['description']?></textarea>
-		</div>
-
-		<div>
-			<div class="label">Ціна: </div>
-			<input type="number" class="form-control" name="price" required placeholder="Ціна"  value="<?=@$_POST['number']?>">
-		</div>
-
-		<div>
-			<div class="label">Фото: </div>
-			<input type="file" class="form-control" name="file"  required placeholder="Назва" accept=".jpg, .jpeg, .png">
-		</div>
-
-		<img src="about:blank" alt="" id="preivew" style="display:none;max-height: 300px;">
-		<br>
-		<div><button type="submit" class="btn btn-success">Додати</button></div>
-
-	</div>
-</form>
-<script>
-	// preview image
-	let preivew = document.getElementById('preivew');
-	let file = document.querySelector('[name="file"]');
-
-	file.addEventListener('change', function(e){
-		if(!file.files.length)
-			return preivew.style.display = "none";
-
-		preivew.style.display = "block";
-		preivew.src = window.URL.createObjectURL(file.files[0]);
-	})
-</script>
+			preview.style.display = "block";
+			preview.src = window.URL.createObjectURL(file.files[0]);
+		});
+	</script>
+<% } %>
 
 
 <%- include('../layout/footer.ejs') %>
