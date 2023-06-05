@@ -1,0 +1,40 @@
+<% let _LOGIN=true; %>
+
+<!DOCTYPE html>
+<html lang="en">
+<title>Авторизація | Patrego</title>
+<%- include('../layout/head.ejs') %>
+<%- include('../layout/header.ejs') %>
+
+<h4 class="title">Авторизація</h4>
+    <div class="form container mt-4">
+        <% if (errors && errors.length > 0) { %>
+            <div id="errors">
+                <%- errors.forEach(function(error) { %>
+                    <%= error %><br>
+                <% }) %>
+            </div>
+            <hr>
+        <% } %>
+
+<h4 class="title">Авторизація</h4> 
+<div class="form container mt-4">
+
+	<br>
+	<form action="login.php" method="post">
+		<p> 
+			<input type="text" class="form-control" name="loginemail" id="loginemail" value="<%= data.loginemail || '' %>"
+			placeholder="Введіть логін або email">
+	</p>
+	<p>
+		<input type="password" class="form-control" name="pass" id="pass" 
+		value="<%= data.pass || '' %>" placeholder="Пароль">
+		</p> 
+		<br>
+		<button type="submit" name="do_login" class="btn btn-success">Увійти</button>
+		<a href="../../_old/signup.php" class="a-register">Зареєструватись</a>
+	</form>
+</div>
+
+<%- include('../layout/footer.ejs') %>
+</html>

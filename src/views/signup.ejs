@@ -1,0 +1,34 @@
+<%  let _LOGIN = true;  %>
+
+<!DOCTYPE html>
+<html lang="en">
+	<title>Реєстрація | Patrego</title> 
+	<%- include('../layout/head.ejs') %>
+	<%- include('../layout/header.ejs') %>
+	<h4 class="title">Реєстрація</h4>
+    <div class="form container mt-4">
+        <br>
+        <form action="/signup" method="post">
+            <p>
+                <input type="text" class="form-control" name="login" id="login" value="<%= data.login || '' %>" placeholder="Введіть логін">
+            </p>
+            <p>
+                <input type="text" class="form-control" name="email" id="email" value="<%= data.email || '' %>" placeholder="Введіть e-mail">
+            </p>
+            <p>
+                <input type="text" class="form-control" name="phonenum" id="phonenum" value="<%= data.phonenum || '' %>" placeholder="Номер телефону">
+            </p>
+            <p>
+                <input type="password" class="form-control" name="pass" id="pass" value="<%= data.pass || '' %>" placeholder="Пароль">
+            </p>
+            <p>
+                <input type="password" class="form-control" name="pass_2" id="pass_2" placeholder="Повторіть пароль">
+            </p>
+            <br>
+            <button type="submit" name="do_signup" class="btn btn-success">Зареєструватись</button>
+            <a href="/login" class="a-login">Увійти</a>
+        </form>
+    </div>
+
+	<%- include('../layout/footer.ejs') %>
+</html>

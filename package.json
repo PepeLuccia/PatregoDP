@@ -1,0 +1,30 @@
+{
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "bootstrap": "^5.3.0",
+    "chalk": "^4.1.2",
+    "connect": "^3.7.0",
+    "ejs": "^3.1.9",
+    "epilogue": "^0.7.1",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "mongoose": "^7.2.2",
+    "mysql": "^2.18.1",
+    "sequelize": "^6.31.1",
+    "serve-static": "^1.15.0",
+    "socket.io": "^4.6.1",
+    "sqlite3": "^5.1.6"
+  },
+  "name": "patregodp",
+  "version": "1.0.0",
+  "description": "Node JS project",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server/server.js"
+  },
+  "keywords": [
+    "node"
+  ],
+  "author": "Fuha Pavlo <pavlo.fuha@gmail.com>",
+  "license": "ISC"
+}

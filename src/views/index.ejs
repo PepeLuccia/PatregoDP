@@ -1,0 +1,36 @@
+<% let _LOGIN=true; %>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<%- include('/src/layout/head.ejs') %>
+	<title>Головна | Patrego</title>
+</head>
+
+<body>
+<%- include('../layout/header.ejs') %>
+
+<div class="form container mt-4">
+	<div class="hello">
+		<% if (typeof logged_user !=='undefined' ) { %>
+			Вітаємо, <%= logged_user.login %>!
+	</div>
+	<br>
+</div>
+
+<%- include('catalogue-main.ejs') %>
+
+<div class="form container mt-4">
+	<% } else { %>
+		<script>
+			document.write("<h3>Необхідно увійти в аккаунт, або зареєструватись для продовження!</h3> <br>");
+		</script>
+		<a class="login_link" href="/login">Увійти</a> <br>
+		<a class="login_link" href="/signup">Реєстрація</a> <br>
+	<% } %>
+</div>
+
+<%- include('../layout/footer.ejs') %>
+
+</body>
+</html>

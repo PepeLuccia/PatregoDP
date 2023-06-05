@@ -1,0 +1,20 @@
+{
+	"100000" : {
+		"name" : "PC predator 600",
+		"cost" : 300,
+		"description" : "2гб, 2 ядра",
+		"image" : "src/goods/predator600.jpg"
+	},
+	"100001" : {
+		"name" : "Notebook",
+		"cost" : 20999,
+		"description" : "2гб, 2 ядра",
+		"image" : "src/goods/51a58352c66bf0923788bdf3bea42b1b.jpg"
+	},
+	"100002" : {
+		"name" : "Куртка",
+		"cost" : 30000,
+		"description" : "2гб, 2 ядра",
+		"image" : "src/goods/8318-3-850x1280.jpg"
+	}
+}

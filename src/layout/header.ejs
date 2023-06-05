@@ -1,0 +1,40 @@
+<header class="nav-bar">
+   <div class="container">
+      <div class="row">
+         <div class="col-xl-2">
+            <ul class="menu d-flex justify-content-end">
+               <li><a href="/" class="logo">Patrego</a></li>
+            </ul>
+         </div>
+         <div class="col-xl-8 ml-auto align-self-center">
+            <nav>
+               <ul class="menu d-flex justify-content-end">
+                  <li class="search nav__item"><i class="fas fa-search"></i></li>
+                  <li class="nav__item"><a href="/">Головна</a></li>
+                  <li class="nav__item"><a href="/add">Продаж</a></li>
+                  <li class="nav__item"><a href="/cart"><i class="fas fa-shopping-basket"></i></a></li>
+
+                  <% if (typeof logged_user !=='undefined' ) { %>
+                     <li class="nav__item">
+                        <a id="profileLink" href=""></a>
+                     </li>
+                     <li class="nav__item">
+                        <a href="/logout">Logout</a>
+                     </li>
+                     <li class="nav__item">
+                        <a id="profileLink" href="profile.ejs">
+                           <%= logged_user.login %>
+                        </a>
+                     </li>
+                  <% } else { %>
+                     <li class="nav__item">
+                        <a href="/login">Увійти</a>
+                     </li>
+                  <% } %>
+               </ul>
+
+            </nav>
+         </div>
+      </div>
+   </div>
+</header>

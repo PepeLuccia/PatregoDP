@@ -1,0 +1,21 @@
+
+<footer class="footer">
+	<hr>
+	<div class="container">
+		<div class="row justify-content-center">
+			<div class="col-xl-8">
+				<a class="link" href="/about">Про <span class="website-domain"></span></a>
+				<a class="link" href="/privacy">Політика конфіденційності</a>
+				<a class="link" href="/terms">Умови користування</a>
+			</div>
+		</div>
+	</div>
+</footer>
+
+<script>
+	window.addEventListener('load', () => {
+		document.querySelectorAll('.website-domain').forEach((el) => {
+			el.innerText = window.location.hostname
+		});
+	})
+</script>
