@@ -1,12 +1,24 @@
 // beautiful error handler
 //require(__DIR__."/../../whoops/index.php");
-const mysql = require('mysql');
+const { MongoClient } = require('mongodb');
 
-const connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'patrego'
-});
+const url = 'mongodb://localhost:27017';
+const dbName = 'patrego';
 
-module.exports = connection;
+const client = new MongoClient(url);
+
+let db;
+
+async function connectToMongoDB() {
+  try {
+    await client.connect();
+    db = client.db(dbName);
+    console.log('Підключено до бази даних');
+  } catch (error) {
+    console.error('Помилка підключення до бази даних:', error);
+  }
+}
+
+connectToMongoDB();
+
+module.exports = db;
